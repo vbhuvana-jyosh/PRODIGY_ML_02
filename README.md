@@ -1,1 +1,30 @@
 # PRODIGY_ML_02
+np.random.seed(42) 
+samples = 100
+spending = np.random.normal(500, 150, n_samples) 
+purchases = np.random.normal(20, 5, n_samples)
+d = pd.DataFrame({'TotalSpending': spending,'NumPurchases': purchases})
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(d)
+kmeans = KMeans(n_clusters=3, random_state=42) 
+kmeans.fit(scaled_data)
+labels = kmeans.labels_
+d['Cluster'] = labels
+plt.figure(figsize=(8, 6))
+scatter = plt.scatter(d['TotalSpending'], d['NumPurchases'], c=d['Cluster'], cmap='viridis')
+plt.scatter(scaler.inverse_transform(kmeans.cluster_centers_)[:, 0], scaler.inverse_transform(kmeans.cluster_centers_)[:, 1], s=200, c='red', marker='x', label='Centroids')
+plt.xlabel('Total Spending ($)')
+plt.ylabel('Number of Purchases')
+plt.title('Customer Clusters Based on Purchase History')
+plt.legend()
+plt.colorbar(scatter, label='Cluster')
+plt.show()
+print("Cluster Centers (in original scale):")
+centers = scaler.inverse_transform(kmeans.cluster_centers_)
+for i, center in enumerate(centers):
+    print(f"Cluster {i}: Spending = ${center[0]:.2f}, Purchases = {center[1]:.2f}")
+print("\nCustomers per Cluster:")
+print(d['Cluster'].value_counts())
+new_customer = scaler.transform([[600, 25]])
+new_cluster = kmeans.predict(new_customer)
+print(f"\nNew customer ($600, 25 purchases) belongs to Cluster {new_cluster[0]}")
